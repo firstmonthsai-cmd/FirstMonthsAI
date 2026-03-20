@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Day AI — Your Infant's Daily Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf7f2;
+    --warm-white: #fffef9;
+    --blush: #f2d9cc;
+    --dusty-rose: #d4937a;
+    --terracotta: #b86a4b;
+    --deep: #2c1f17;
+    --mid: #6b4c3b;
+    --soft: #9c7b6e;
+    --sage: #a8b5a0;
+    --sage-light: #e8ede6;
+    --accent: #c9774f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--deep);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 48px 0 32px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .logo-mark {
+    display: inline-block;
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--blush), var(--dusty-rose));
+    border-radius: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(184,106,75,0.2);
+  }
+
+  .logo-mark::after {
+    content: '✦';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--deep);
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--terracotta);
+  }
+
+  .tagline {
+    margin-top: 10px;
+    color: var(--soft);
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  /* Medical Disclaimer Banner */
+  .disclaimer-banner {
+    background: var(--sage-light);
+    border-left: 3px solid var(--sage);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    font-size: 0.82rem;
+    color: var(--mid);
+    line-height: 1.55;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .disclaimer-banner strong {
+    color: var(--deep);
+    font-weight: 500;
+  }
+
+  /* Category pills */
+  .category-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .pill {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    background: var(--warm-white);
+    color: var(--mid);
+    border-color: #e8ddd7;
+  }
+
+  .pill:hover, .pill.active {
+    background: var(--blush);
+    border-color: var(--dusty-rose);
+    color: var(--terracotta);
+  }
+
+  /* Input area */
+  .input-card {
+    background: var(--warm-white);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 2px 20px rgba(44,31,23,0.07);
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .input-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--soft);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .age-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .age-row input, .age-row select {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border: 1.5px solid #e8ddd7;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    background: var(--cream);
+    color: var(--deep);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .age-row input:focus, .age-row select:focus {
+    border-color: var(--dusty-rose);
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 14px;
+    border: 1.5px solid #e8ddd7;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    background: var(--cream);
+    color: var(--deep);
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--dusty-rose); }
+  textarea::placeholder { color: #c4b0a6; }
+
+  .ask-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--terracotta), var(--dusty-rose));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(184,106,75,0.3);
+    letter-spacing: 0.2px;
+  }
+
+  .ask-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(184,106,75,0.4);
+  }
+
+  .ask-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Prompt suggestions */
+  .prompts-label {
+    font-size: 0.78rem;
+    color: var(--soft);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+
+  .prompt-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    background: var(--cream);
+    border: 1px solid #e3d5ce;
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--mid);
+    transition: all 0.15s;
+  }
+
+  .chip:hover {
+    background: var(--blush);
+    border-color: var(--dusty-rose);
+    color: var(--terracotta);
+  }
+
+  /* Response area */
+  .response-card {
+    background: var(--warm-white);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 2px 20px rgba(44,31,23,0.07);
+    margin-bottom: 20px;
+    display: none;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .response-card.visible { display: block; }
+
+  .response-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f0e8e3;
+  }
+
+  .response-icon {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--blush), var(--dusty-rose));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .response-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--deep);
+  }
+
+  .response-body {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--mid);
+    white-space: pre-wrap;
+  }
+
+  .response-body strong {
+    color: var(--deep);
+    font-weight: 500;
+  }
+
+  .loading-dots {
+    display: flex;
+    gap: 6px;
+    padding: 10px 0;
+  }
+
+  .loading-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--dusty-rose);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Response disclaimer */
+  .response-disclaimer {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #f0e8e3;
+    font-size: 0.75rem;
+    color: #b09990;
+    line-height: 1.5;
+  }
+
+  /* Conversation history */
+  .history-section {
+    margin-top: 8px;
+  }
+
+  .history-item {
+    background: var(--warm-white);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--blush);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .history-q {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--soft);
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .history-a {
+    font-size: 0.88rem;
+    color: var(--mid);
+    line-height: 1.65;
+    white-space: pre-wrap;
+  }
+
+  /* Footer links */
+  .footer-links {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #ede5df;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    font-size: 0.78rem;
+    color: var(--soft);
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--terracotta); }
+
+  /* Modals */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(44,31,23,0.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--warm-white);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(44,31,23,0.2);
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    color: var(--deep);
+  }
+
+  .modal h3 {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--terracotta);
+    margin: 16px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .modal p, .modal li {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--mid);
+    margin-bottom: 8px;
+  }
+
+  .modal ul { padding-left: 18px; }
+
+  .modal-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    background: var(--cream);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: var(--blush); }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.7rem; }
+    .modal { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper">
+  <header>
+    <div class="logo-mark"></div>
+    <h1>Baby <em>Day</em> AI</h1>
+    <p class="tagline">Gentle guidance for your infant's toughest moments</p>
+  </header>
+
+  <!-- Medical Disclaimer Banner -->
+  <div class="disclaimer-banner">
+    <strong>⚕️ For informational purposes only.</strong> Baby Day AI provides general parenting guidance and is <strong>not a substitute for professional medical advice</strong>. Always consult your pediatrician for health concerns. In an emergency, call 911 or your local emergency services immediately.
+  </div>
+
+  <!-- Category Pills -->
+  <div class="category-row">
+    <span class="pill active" onclick="setCategory(this, '')">All Topics</span>
+    <span class="pill" onclick="setCategory(this, 'sleep')">😴 Sleep</span>
+    <span class="pill" onclick="setCategory(this, 'feeding')">🍼 Feeding</span>
+    <span class="pill" onclick="setCategory(this, 'teething')">🦷 Teething</span>
+    <span class="pill" onclick="setCategory(this, 'development')">🌱 Development</span>
+    <span class="pill" onclick="setCategory(this, 'soothing')">🤗 Soothing</span>
+  </div>
+
+  <!-- Input Card -->
+  <div class="input-card">
+    <div class="input-label">Your baby's age</div>
+    <div class="age-row">
+      <input type="number" id="babyAge" placeholder="e.g. 5" min="0" max="12" />
+      <select id="ageUnit">
+        <option value="months">months old</option>
+        <option value="weeks">weeks old</option>
+      </select>
+    </div>
+
+    <div class="input-label">What's going on?</div>
+    <textarea id="userQuestion" placeholder="e.g. My baby has been drooling a lot and chewing on everything. Could this be teething? What can I do to help?"></textarea>
+
+    <div class="prompts-label">Quick prompts</div>
+    <div class="prompt-chips" id="promptChips">
+      <span class="chip" onclick="usePrompt(this)">Baby won't sleep longer than 2 hours</span>
+      <span class="chip" onclick="usePrompt(this)">Signs of teething at 5 months</span>
+      <span class="chip" onclick="usePrompt(this)">How much should baby be eating?</span>
+      <span class="chip" onclick="usePrompt(this)">Is this a growth spurt?</span>
+      <span class="chip" onclick="usePrompt(this)">Soothing a fussy baby at night</span>
+    </div>
+
+    <button class="ask-btn" id="askBtn" onclick="askQuestion()">Ask Baby Day AI ✦</button>
+  </div>
+
+  <!-- Response Card -->
+  <div class="response-card" id="responseCard">
+    <div class="response-header">
+      <div class="response-icon">✦</div>
+      <div class="response-title" id="responseTitle">Baby Day AI Response</div>
+    </div>
+    <div class="response-body" id="responseBody">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="response-disclaimer" id="responseDisclaimer" style="display:none">
+      ⚕️ This is general informational guidance only and does not constitute medical advice. If you have concerns about your baby's health, please consult your pediatrician. For emergencies, call 911.
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section" id="historySection"></div>
+
+  <!-- Footer -->
+  <div class="footer-links">
+    <a href="#" onclick="openModal('disclaimerModal')">Medical Disclaimer</a>
+    <a href="#" onclick="openModal('privacyModal')">Privacy Policy</a>
+    <a href="#" onclick="openModal('termsModal')">Terms of Service</a>
+  </div>
+</div>
+
+<!-- Medical Disclaimer Modal -->
+<div class="modal-overlay" id="disclaimerModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('disclaimerModal')">✕</button>
+    <h2>Medical Disclaimer</h2>
+    <p>Baby Day AI is designed to provide <strong>general informational guidance</strong> to support parents and caregivers of infants. It is not intended to be, and should not be used as, a substitute for professional medical advice, diagnosis, or treatment.</p>
+    <h3>No Medical Advice</h3>
+    <p>The information provided by Baby Day AI does not constitute medical advice. Always seek the advice of a qualified healthcare provider with any questions you may have regarding your child's health, medical condition, or treatment.</p>
+    <h3>No Doctor-Patient Relationship</h3>
+    <p>Use of this tool does not create a doctor-patient relationship between you and any medical professional. Responses are generated by artificial intelligence and may not reflect current medical standards or your child's specific circumstances.</p>
+    <h3>Emergency Situations</h3>
+    <p>If your child is experiencing a medical emergency, call 911 or your local emergency services immediately. Do not rely on this tool in emergency situations.</p>
+    <h3>AI Limitations</h3>
+    <p>Artificial intelligence can make mistakes. Information provided may be incomplete, outdated, or not applicable to your specific situation. Always verify important health information with a licensed medical professional.</p>
+  </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal-overlay" id="privacyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('privacyModal')">✕</button>
+    <h2>Privacy Policy</h2>
+    <p><em>Last updated: 2025</em></p>
+    <h3>Information We Process</h3>
+    <p>When you use Baby Day AI, the questions you type are sent to an AI model to generate a response. We do not permanently store, sell, or share the content of your questions with third parties for marketing purposes.</p>
+    <h3>No Personal Health Records</h3>
+    <p>Do not enter personally identifiable health information, full names, or sensitive data into this tool. Treat all inputs as non-confidential.</p>
+    <h3>Children's Privacy</h3>
+    <p>This tool is designed for use by adults (parents and caregivers). We do not knowingly collect personal information from children under 13.</p>
+    <h3>AI Processing</h3>
+    <p>Your questions are processed by the Anthropic Claude AI API. Please review Anthropic's privacy policy at anthropic.com for information about how your data is handled at the AI processing level.</p>
+    <h3>Cookies</h3>
+    <p>This tool does not use tracking cookies or analytics. Your conversation history is stored only in your browser's local session and is not transmitted to our servers.</p>
+    <h3>Contact</h3>
+    <p>For privacy questions, please contact the app owner directly.</p>
+  </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div class="modal-overlay" id="termsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('termsModal')">✕</button>
+    <h2>Terms of Service</h2>
+    <p><em>Last updated: 2025</em></p>
+    <h3>Acceptance of Terms</h3>
+    <p>By using Baby Day AI, you agree to these Terms of Service. If you do not agree, please do not use this tool.</p>
+    <h3>Permitted Use</h3>
+    <p>Baby Day AI is provided for personal, non-commercial informational use by parents and caregivers. You may not use this tool to:</p>
+    <ul>
+      <li>Seek or replace professional medical diagnosis or treatment</li>
+      <li>Make critical healthcare decisions without consulting a doctor</li>
+      <li>Resell or redistribute AI-generated responses</li>
+      <li>Input sensitive personal health records or identifying information</li>
+    </ul>
+    <h3>Disclaimer of Warranties</h3>
+    <p>Baby Day AI is provided "as is" without warranties of any kind. We do not warrant that responses will be accurate, complete, reliable, or suitable for your specific situation.</p>
+    <h3>Limitation of Liability</h3>
+    <p>To the maximum extent permitted by law, the creators of Baby Day AI shall not be liable for any damages arising from your use of or reliance on information provided by this tool.</p>
+    <h3>Medical Emergencies</h3>
+    <p>You acknowledge that this tool is not appropriate for medical emergencies. In any emergency, call 911 or seek immediate professional medical help.</p>
+    <h3>Changes to Terms</h3>
+    <p>We reserve the right to update these terms at any time. Continued use of the tool constitutes acceptance of updated terms.</p>
+  </div>
+</div>
+
+<script>
+  let selectedCategory = '';
+  let conversationHistory = [];
+
+  function setCategory(el, cat) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    selectedCategory = cat;
+
+    const chips = {
+      '': ['Baby won\'t sleep longer than 2 hours','Signs of teething at 5 months','How much should baby be eating?','Is this a growth spurt?','Soothing a fussy baby at night'],
+      'sleep': ['Baby wakes every 2 hours','Is sleep training safe?','How long should naps be?','Night feeding schedule','Drowsy but awake technique'],
+      'feeding': ['How much formula per feeding?','Breastfeeding latch issues','Starting solids timing','Cluster feeding explained','Bottle refusal help'],
+      'teething': ['First tooth timeline','Teething remedies that are safe','Drooling and teething','Teething vs illness symptoms','Best teething toys'],
+      'development': ['Milestone for 5 month old','Tummy time tips','When do babies roll over?','Social smiling development','Vision development stages'],
+      'soothing': ['5 S\'s for calming a baby','Why is my baby so fussy?','Colic vs gas','Evening fussiness tips','Swaddling techniques']
+    };
+
+    const container = document.getElementById('promptChips');
+    container.innerHTML = (chips[cat] || chips['']).map(c =>
+      `<span class="chip" onclick="usePrompt(this)">${c}</span>`
+    ).join('');
+  }
+
+  function usePrompt(el) {
+    document.getElementById('userQuestion').value = el.textContent;
+    document.getElementById('userQuestion').focus();
+  }
+
+  async function askQuestion() {
+    const age = document.getElementById('babyAge').value;
+    const ageUnit = document.getElementById('ageUnit').value;
+    const question = document.getElementById('userQuestion').value.trim();
+
+    if (!question) {
+      document.getElementById('userQuestion').focus();
+      return;
+    }
+
+    const btn = document.getElementById('askBtn');
+    btn.disabled = true;
+    btn.textContent = 'Thinking…';
+
+    const responseCard = document.getElementById('responseCard');
+    const responseBody = document.getElementById('responseBody');
+    const responseDisclaimer = document.getElementById('responseDisclaimer');
+
+    responseCard.classList.add('visible');
+    responseBody.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+    responseDisclaimer.style.display = 'none';
+    responseCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const ageContext = age ? `The baby is ${age} ${ageUnit} old. ` : '';
+    const categoryContext = selectedCategory ? `This is about ${selectedCategory}. ` : '';
+    const userMessage = `${ageContext}${categoryContext}${question}`;
+
+    const systemPrompt = `You are Baby Day AI, a warm and knowledgeable parenting support assistant for parents of infants (0–12 months). You provide evidence-based, pediatrician-aligned general guidance in a calm, supportive tone.
+
+IMPORTANT RULES:
+- You provide GENERAL INFORMATIONAL GUIDANCE only — never medical diagnoses or treatment plans
+- Always recommend consulting a pediatrician for health concerns
+- For anything that sounds like an emergency (difficulty breathing, seizure, high fever in newborn, etc.), immediately direct them to call 911 or go to an ER
+- Be warm, non-judgmental, and supportive of the parent
+- Keep responses clear and organized — use short paragraphs or gentle bullet points
+- Acknowledge the parent's feelings before diving into advice
+- End responses with a brief note reminding them their pediatrician is their best resource for specific concerns
+
+Format: Use clear line breaks. You may use gentle emojis sparingly. Keep responses to 200–350 words unless complexity requires more.`;
+
+    // Build conversation messages
+    const messages = [
+      ...conversationHistory,
+      { role: 'user', content: userMessage }
+    ];
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: messages
+        })
+      });
+
+      const data = await response.json();
+      const answer = data.content?.[0]?.text || 'Sorry, I had trouble generating a response. Please try again.';
+
+      // Format the response nicely
+      const formatted = answer
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+
+      responseBody.innerHTML = formatted;
+      responseDisclaimer.style.display = 'block';
+
+      // Add to history
+      conversationHistory.push({ role: 'user', content: userMessage });
+      conversationHistory.push({ role: 'assistant', content: answer });
+
+      // Keep history manageable
+      if (conversationHistory.length > 10) {
+        conversationHistory = conversationHistory.slice(-8);
+      }
+
+      // Add to visible history (if more than 1 exchange)
+      if (conversationHistory.length > 2) {
+        addToHistory(question, answer);
+      }
+
+    } catch (err) {
+      responseBody.innerHTML = 'Something went wrong. Please check your connection and try again.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Ask Baby Day AI ✦';
+    document.getElementById('userQuestion').value = '';
+  }
+
+  function addToHistory(q, a) {
+    const section = document.getElementById('historySection');
+    // Only show older exchanges in history, keep latest in main card
+    const items = section.querySelectorAll('.history-item');
+    if (items.length >= 4) items[0].remove();
+
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    const shortA = a.length > 300 ? a.substring(0, 300) + '…' : a;
+    const formatted = shortA.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    div.innerHTML = `<div class="history-q">"${q.substring(0,80)}${q.length>80?'…':''}"</div><div class="history-a">${formatted}</div>`;
+    section.insertBefore(div, section.firstChild);
+  }
+
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  // Enter key support
+  document.getElementById('userQuestion').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.metaKey) askQuestion();
+  });
+</script>
+</body>
+</html>
